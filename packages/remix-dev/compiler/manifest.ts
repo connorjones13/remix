@@ -51,6 +51,7 @@ export async function create({
 
   let entry: Manifest["entry"] | undefined;
   let routes: Manifest["routes"] = {};
+  let processedRoutes = new Set<string>();
 
   for (let key of Object.keys(metafile.outputs).sort()) {
     let output = metafile.outputs[key];
@@ -67,6 +68,11 @@ export async function create({
         /(^browser-route-module:|\?browser$)/g,
         ""
       );
+
+      // Manual routes can point to the same route file. Avoid processing them more than once.
+      if (processedRoutes.has(entryPointFile)) continue;
+      processedRoutes.add(entryPointFile);
+
       let groupedRoute = routesByFile.get(entryPointFile);
       invariant(
         groupedRoute,
